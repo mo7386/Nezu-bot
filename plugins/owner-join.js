@@ -1,77 +1,25 @@
-//need fix
-let handler = async (m, { conn, text, usedPrefix, command, args, participants, isOwner }) => {
-	
-  if (!isOwner) return conn.sendMessage(m.chat,{text:`*Invite bot to a group*\n\nHello @${m.sender.split('@')[0]}\nyou can rent the bot to join a group\n\n_For more info you can DM the owner_\n*Type* \`\`\`.owner\`\`\` *to DM the owner*`.trim()}, {quoted:m});
-   /*if (!isOwner) return conn.sendButton(m.chat, `*Invite bot to a group*\n\nHello @${m.sender.split('@')[0]}\nyou can rent the bot to join a group\n\n_more info click on the button_`.trim(), igfg, null, [
-    ['Alquilar', `${usedPrefix}buyprem`]] , m, { mentions: [m.sender] })*/
-  
-  let time = global.db.data.users[m.sender].lastjoin + 86400000
-  let linkRegex = /chat.whatsapp.com\/([0-9A-Za-z]{20,24})/i
-  let delay = time => new Promise(res => setTimeout(res, time))
- 
-  let name = m.sender 
-  let [_, code] = text.match(linkRegex) || []
-  if (!args[0]) throw `✳️ Send the group link\n\n 📌 Example:\n *${usedPrefix + command}* <linkwa> <dias>\n\n_the number is the days the bot will be in the group_` 
-  if (!code) throw `✳️ Link invalid`
-  if (!args[1]) throw `📌 Missing number of days\n\n Example:\n *${usedPrefix + command}* <linkwa> 2`
-  if (isNaN(args[1])) throw `✳️ Number only, representing the days the bot will be in the group!`
-  let owbot = global.owner[1] 
-  m.reply(`😎 Wait 3 seconds, I will join the group`)
-  await delay(3000)
-  try {
-  let res = await conn.groupAcceptInvite(code)
-  let b = await conn.groupMetadata(res)
-  let d = b.participants.map(v => v.id)
-  let member = d.toString()
-  let e = await d.filter(v => v.endsWith(owbot + '@s.whatsapp.net'))
-  let nDays = 86400000 * args[1]  
-  let now = new Date() * 1
-  if (now < global.db.data.chats[res].expired) global.db.data.chats[res].expired += nDays
-  else global.db.data.chats[res].expired = now + nDays
-  if (e.length) await m.reply(`✅ I successfully joined the group \n\n≡ group info \n\n *Name :* ${await conn.getName(res)}\n\nThe bot will exit automatically after \n\n${msToDate(global.db.data.chats[res].expired - now)}`)
- 
- if (e.length) await conn.reply(res, `🏮 hello guys
+let linkRegex = /chat.whatsapp.com\/([0-9A-Za-z]{20,24})/i
 
-@${owbot} he is my creator if you have any doubt
-I was invited by *${m.name}*`, m, {
-    mentions: d
-     }).then(async () => {
-     await delay(7000)
-     }).then( async () => {
-     await conn.reply(res, `ok everyone relax 🤭`, 0)
-     await conn.reply(global.owner[1]+'@s.whatsapp.net', `≡ *GROUP INVITATION*\n\n@${m.sender.split('@')[0]} ha invitado a *${conn.user.name}* al grupo\n\n*${await conn.getName(res)}*\n\n*ID* : ${res}\n\n📌 Link : ${args[0]}\n\nThe bot will exit automatically after \n\n${msToDate(global.db.data.chats[res].expired - now)}`, null, {mentions: [m.sender]})
-     })
-     if (!e.length) await conn.reply(global.owner[1]+'@s.whatsapp.net', `≡ *INVITACIÓN A GRUPO*\n\n@${m.sender.split('@')[0]} has invited *${conn.user.name}* to group\n\n*${await conn.getName(res)}*\n\n*ID* : ${res}\n\n📌 link : ${args[0]}\n\nThe bot will exit automatically after\n\n ${msToDate(global.db.data.chats[res].expired - now)}`, null, {mentions: [m.sender]})
-     if (!e.length) await m.reply(`✳️ Successfully invite bot to group\n\n${await conn.getName(res)}\n\nThe bot will exit automatically after *${msToDate(global.db.data.chats[res].expired - now)}*`).then(async () => {
-     let mes = `Hii 👋🏻
-     
-*${conn.user.name}* is one of the multi-device WhatsApp bots built with Node.js, *${conn.user.name}* just invited by *${m.name}*
+let handler = async (m, { conn, text, isMods, isOwner }) => {
+let link = (m.quoted ? m.quoted.text ? m.quoted.text : text : text) || text
+let [_, code] = link.match(linkRegex) || []
 
-to see the menu of the bot write
+if (!code) throw ` *أدخل رابط المجموعة.*\n*أدخل رابط المجموعة.*\n\n*مثال*\n*#انضم ${nn}*\n\n*#ادخل ${nnn}*`
 
-${usedPrefix}help
-@${conn.user.jid.split('@')[0]} will exit automatically after \n\n${msToDate(global.db.data.chats[res].expired - now)}`
-  await conn.sendMessage(m.chat, mes,  m, {
-  mentions: d
-   })
-     })
-    } catch (e) {
-      conn.reply(global.owner[1]+'@s.whatsapp.net', e)
-      throw `✳️ Sorry, the bot  joined group`
-      }
-}
-handler.help = ['join <chat.whatsapp.com> <dias>']
+if ( isMods || isOwner || m.fromMe) {
+m.reply(` تم الانضم اللي المجموعه!!✅*\n*تم الانضمام بنجاح ✅*`)
+await delay(5 * 5000)
+let res = await conn.groupAcceptInvite(code)
+} else {
+const data = global.owner.filter(([number, _, isDeveloper]) => isDeveloper && number)
+
+await delay(1 * 1000)
+for (let jid of data.map(([id]) => [id] + '@s.whatsapp.net').filter(v => v != conn.user.jid)) m.reply(`╭══•───────────────•══╮\n┃ 📧 *الطلب للانضمام إلى المجموعة*\n┃ 📧 *طلبات المجموعه*\n╰══•───────────────•══╯\n\n*👤 الطالب*\n` + ' wa.me/' + m.sender.split('@')[0] + '\n\n*🔮 لينك الجروب*\n ' + link, jid)
+
+m.reply(`*✅ تم إرسال الرابط الخاص بك لي مطوري.*\n*تم إرسال الرابط الخاص بك إلى مطوري.*\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n⚠️ *سيتم تقييم مجموعتك وسيكون الأمر متروكًا للمالك ليقرر ما إذا كان سينضم إلى المجموعة أم لا.*\n*سيتم تقييم مجموعتك وسيكون الأمر متروكًا للمالك إذا انضم إلى المجموعة أم لا.*\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n❕ *قد يتم رفض طلبك للأسباب التالية::*\n*قد يتم رفض طلبك للأسباب التالية:*\n*1️⃣ البوت مشنع بجروبات كثيرا جدا.*\n*البوت مشنع بجروبات كثيرا جدا.*\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n2️⃣ *تم طرد البوت مسبقاً.*\n*تم طرد البوت مسبقاً.*\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n3️⃣ *المجموعه لا تلتزم بالقوانين\n*المجموعه لا تلتزم بالقوانين\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n4️⃣ *رابط الجروب تم تعينه .*\n*رابط الجروب تم تعينه .*\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n5️⃣ *لم تتم إضافته إلى المجموعات بناءً على مطوري.*\n*لم تتم إضافته إلى المجموعات بواسطة مطوري*\n┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n💌 *قد يستغرق الرد على الطلب ساعات.  يرجى التحلي بالصبر.  شكرا*\n*قد يستغرق الرد على الطلب ساعات.  يرجى التحلي بالصبر.  شكرًا لك*`)}}
+
+handler.help = ['join [chat.whatsapp.com]']
 handler.tags = ['owner']
-handler.command = ['join', 'invite'] 
-
-//handler.owner = true
-
+handler.command = /^unete|ادخل|انضم|unir|unite|unirse|entra|entrar$/i 
 export default handler
-
-function msToDate(ms) {
-  let d = isNaN(ms) ? '--' : Math.floor(ms / 86400000)
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24
-  let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
-  let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return [d, ' *Days*\n ', h, ' *Hours*\n ', m, ' *Minutes*\n ', s, ' *Seconds* '].map(v => v.toString().padStart(2, 0)).join('')
-}
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))

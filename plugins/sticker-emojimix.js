@@ -1,31 +1,27 @@
-
-import fetch from 'node-fetch'
-import { sticker } from '../lib/sticker.js'
-
+import {sticker} from '../lib/sticker.js';
+import MessageType from '@whiskeysockets/baileys';
+import fetch from 'node-fetch';
+import fs from 'fs';
+const handler = async (m, {conn, text, args}) => {
+  if (!args[0]) throw '*❮◈┇طريقة استعمال الامر┇◈❯*\n*مثال:*\n*#دمج 🤨+😣*';
+  const [emoji1, emoji2] = text.split`+`;
+  const anu = await fetchJson(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji1)}_${encodeURIComponent(emoji2)}`);
+  for (const res of anu.results) {
+    const stiker = await sticker(false, res.url, global.packname, global.author);
+    conn.sendFile(m.chat, stiker, null, {asSticker: true});
+  }
+};
+handler.help = ['دمج'].map((v) => v + ' emot1|emot2>');
+handler.tags = ['fun'];
+handler.command = /^(دمج|مكس)$/i;
+export default handler;
 const fetchJson = (url, options) => new Promise(async (resolve, reject) => {
-fetch(url, options)
-.then(response => response.json())
-.then(json => {
-resolve(json)
-})
-.catch((err) => {
-reject(err)
-})})
-
-let handler = async (m, { conn, text, args, usedPrefix, command }) => {
-	
-if (!args[0]) throw `📌 Example : ${usedPrefix + command} 😎+🤑`
-if (!text.includes('+')) throw  `✳️ Separate the emoji with a *+* \n\n📌 Example : \n*${usedPrefix + command}* 😎+🤑`
-let [emoji, emoji2] = text.split`+`
-let anu = await fetchJson(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji)}_${encodeURIComponent(emoji2)}`)
-for (let res of anu.results) {
-let stiker = await sticker(false, res.url, global.packname, global.author)
-conn.sendFile(m.chat, stiker, null, { asSticker: true }, m)
-}}
-
-handler.help = ['emojimix <emoji+emoji>']
-handler.tags = ['sticker']
-handler.command = ['emojimix'] 
-handler.diamond = true
-
-export default handler
+  fetch(url, options)
+      .then((response) => response.json())
+      .then((json) => {
+        resolve(json);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+});

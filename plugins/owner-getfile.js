@@ -1,64 +1,52 @@
-import fs from 'fs'
-import syntaxError from 'syntax-error'
-import path from 'path'
+import fs from 'fs';
+import syntaxError from 'syntax-error';
+import path from 'path';
+import cp, { exec as _exec } from 'child_process';
+import { promisify } from 'util';
 
-const _fs = fs.promises
+const exec = promisify(_exec).bind(cp);
+let handler = async (m, { conn, isROwner, usedPrefix, command, text }) => {
+  const pluginNames = Object.keys(plugins).map(name => name.replace('.js', ''));
+  
+  if (!text) {
+    throw `⚠️ باستخدام الأمر : ${usedPrefix + command} اسم الملف>
+      
+📌 مثال:
+${usedPrefix + command} main-menu
+`.trim();
+  }
 
-let handler = async (m, { text, usedPrefix, command, __dirname }) => {
-    if (!text) throw `
-✳️ user  : ${usedPrefix + command} <name file>
+  if (!pluginNames.includes(text)) {
+    return m.reply(`
+📌 *مثال:* 
+ ${usedPrefix + command} main-menu 
+      
+*╭─╮─᤻─᳒─᤻᳒᯽⃟ᰳᰬᰶ┈*⃐ *قائمة البرنامج المساعد*️⃟ᬽ፝֟━*
+├❥ᰰຼ ${pluginNames.map(name => `├❥ᰰຼ ${name}`).join('\n')}
+*╰┄̸࣭࣭࣭࣭࣭ٜ۫┄࣭࣭࣭۫┄̸࣭۫┄̸࣭࣭࣭࣭࣭ٜ۫┄࣭࣭࣭۫┄̸࣭۫┄̸࣭࣭࣭࣭࣭ٜ۫┄̸࣭࣭࣭࣭࣭ٜ۫┄࣭۫*
+    `);
+  }
 
-📌 Example:
-        ${usedPrefix}getfile main.js
-        ${usedPrefix}getplugin owner
-`.trim()
-    if (/p(lugin)?/i.test(command)) {
-        const filename = text.replace(/plugin(s)\//i, '') + (/\.js$/i.test(text) ? '' : '.js')
-        const pathFile = path.join(__dirname, filename)
-        const file = await _fs.readFile(pathFile, 'utf8')
-        m.reply(file)
-        const error = syntaxError(file, filename, {
-            sourceType: 'module',
-            allowReturnOutsideFunction: true,
-            allowAwaitOutsideFunction: true
-        })
-        if (error) {
-            await m.reply(`
-❎ bug found in  *${filename}*:
+  try {
+    const { stdout, stderr } = await exec(`cat plugins/${text}.js`);
+    const pluginFilePath = path.join('./plugins', `${text}.js`);
+    
+    if (stdout.trim()) { 
+      const res = await conn.sendMessage(m.chat, { text: stdout }, { quoted: m });
+      await conn.sendMessage(m.chat, { document: fs.readFileSync(pluginFilePath), mimetype: 'application/javascript', fileName: `${text}.js` }, { quoted: res });
+    } 
 
-${error}
-
-`.trim())
-        }
-
-    } else {
-        const isJavascript = /\.js/.test(text)
-        if (isJavascript) {
-            const file = await _fs.readFile(text, 'utf8')
-            m.reply(file)
-            const error = syntaxError(file, text, {
-                sourceType: 'module',
-                allowReturnOutsideFunction: true,
-                allowAwaitOutsideFunction: true
-            })
-            if (error) {
-                await m.reply(`
-❎ bug found in *${text}*:
-
-${error}
-
-`.trim())
-            }
-        } else {
-            const file = await _fs.readFile(text, 'base64')
-            await m.reply(Buffer.from(file, 'base64'))
-        }
+    if (stderr.trim()) { 
+      const arc = await conn.sendMessage(m.chat, { text: stderr }, { quoted: m });
+      await conn.sendMessage(m.chat, { document: fs.readFileSync(pluginFilePath), mimetype: 'application/javascript', fileName: `${text}.js` }, { quoted: arc });
     }
-}
-handler.help = ['plugin', 'file'].map(v => `get${v} <name file>`)
+  } catch (e) {
+    m.reply('⚠️ فشل')
+  }
+};
+handler.help = ['getplugin']
 handler.tags = ['owner']
-handler.command = /^g(et)?(p(lugin)?|f(ile)?)$/i
-
+handler.command = ['الامردا']
 handler.rowner = true
 
 export default handler
