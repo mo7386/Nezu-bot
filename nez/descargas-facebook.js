@@ -64,9 +64,6 @@ reportError(e)}
 handler.help = ['fb']
 handler.tags = ['descargas']
 handler.command = /^(فيسبوك|fb|فيس|fbdl)$/i
-
-handler.diamond = true
-
 export default handler
   
 function checkMessageType(url) {
