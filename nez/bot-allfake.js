@@ -1,4 +1,4 @@
-import pkg from '@whiskeysockets/baileys'
+/*import pkg from '@whiskeysockets/baileys'
 import fs from 'fs'
 import fetch from 'node-fetch'
 import axios from 'axios'
@@ -33,9 +33,9 @@ let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? t
 global.fotos = sityImg.getRandom()
 global.enlaces = linkSity.getRandom()
 
-/* 
+
 Mensajes Fakes
-*/
+
 
 //global.gitHub = { contextInfo: { externalAdReply: { mediaUrl: md, mediaType: 'VIDEO', description: dev, title: , body: 'Grupos ofc', thumbnailUrl: pp, sourceUrl: nn }}}
   
